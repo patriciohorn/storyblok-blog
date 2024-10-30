@@ -1,43 +1,17 @@
 ---
 import { useStoryblokApi } from '@storyblok/astro';
 import StoryblokComponent from '@storyblok/astro/StoryblokComponent.astro';
-
-// Generatin static paths
-export async function getStaticPaths() {
-  // Intialize Storyblok API client
-  const sbApi = useStoryblokApi();
-
-  // Fetching data from SB endpoint
-  const { data } = await sbApi.get('cdn/stories', {
-    // returns all stories of type blogPost
-    content_type: 'blogPost',
+const storyblokApi = useStoryblokApi();
+const slug = Astro.params.slug;
+let content;
+try {
+  const { data } = await storyblokApi.get(`cdn/stories/blog/${slug}`, {
     version: import.meta.env.DEV ? 'draft' : 'published'
   });
-
-  // Extracts stories (content entries) into an array
-  const stories = Object.values(data.stories);
-
-  // Maps over each story in the array creating an object with the path details Astro needs
-  return stories.map((story: any) => {
-    // Runs for each story item in stories array, return object for each story
-    return {
-      params: { slug: story.slug }
-    };
-  });
+  content = data.story.content;
+} catch (error) {
+  return Astro.redirect('/404');
 }
-
-// Initialize SB API client
-const sbApi = useStoryblokApi();
-// Extracts slug param from Astro.params, used to identify and fetch the specific story or blog post that matches requested URL
-const { slug } = Astro.params;
-
-// Make async request to SB CDN API at specified endpoint
-const { data } = await sbApi.get(`cdn/stories/blog/${slug}`, {
-  version: import.meta.env.DEV ? 'draft' : 'published'
-});
-
-// Holds all properties of the content such as title, content blocks, images, and other fields defined in SB for that particular blog post
-const story = data.story;
 ---
 
 <html lang="en">
@@ -45,6 +19,6 @@ const story = data.story;
     <title>Storyblok & Astro</title>
   </head>
   <body>
-    <StoryblokComponent blok={story.content} />
+    <StoryblokComponent blok={content} />
   </body>
 </html>
