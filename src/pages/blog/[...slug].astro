@@ -12,13 +12,11 @@ export async function getStaticPaths() {
     version: import.meta.env.DEV ? 'draft' : 'published'
   });
 
-  const stories = Object.values(data.stories);
+  const stories = data.stories;
 
-  return stories.map((story: any) => {
-    return {
-      params: { slug: story.slug }
-    };
-  });
+  return stories.map((story: any) => ({
+    params: { slug: story.slug }
+  }));
 }
 
 const sbApi = useStoryblokApi();
