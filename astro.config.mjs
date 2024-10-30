@@ -12,6 +12,13 @@ import basicSsl from '@vitejs/plugin-basic-ssl';
 // Astro config giled does not normally suppor env variables, using loadEnv function from vite to load them
 const env = loadEnv('', process.cwd(), 'STORYBLOK');
 
+const { RUNNING_LOCALLY, STORYBLOK_ACESS_TOKEN, STORYBLOK_IS_PREVIEW } = loadEnv(
+  process.env.NODE_ENV,
+  process.cwd(),
+  ''
+);
+const isLocal = RUNNING_LOCALLY === 'yes';
+
 // https://astro.build/config
 export default defineConfig({
   integrations: [
@@ -29,10 +36,12 @@ export default defineConfig({
     }),
     tailwind()
   ],
-  vite: {
-    plugins: [basicSsl()],
-    server: {
-      https: true
+  ...(isLocal && {
+    vite: {
+      plugins: [basicSsl()],
+      server: {
+        https: true
+      }
     }
-  }
+  })
 });
